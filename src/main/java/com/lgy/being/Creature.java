@@ -1,5 +1,4 @@
 package com.lgy.being;
-
 import com.lgy.annotation.ClassAnnotation;
 import com.lgy.gui.MyTextArea;
 import com.lgy.playback.AttackBehave;
@@ -10,7 +9,6 @@ import com.lgy.space.Board;
 import com.lgy.space.Square;
 import com.lgy.util.DirectionVector;
 import com.lgy.util.StyleImage;
-
 
 @ClassAnnotation(descrip = "表示一个生物体，扩充了作为being的属性")
 public class Creature extends Being implements Runnable{
@@ -151,16 +149,12 @@ public class Creature extends Being implements Runnable{
 
     @Override
     public void run() {
-        while (!Thread.currentThread().isInterrupted() ) {  //外界可以对线程进行强制打断 比如比赛结束时
+        while(Main.fightPlace.isOver()==false){
             if(this.alive==false)       //如果这个生物死了 这个线程也就不run了
                 break;
             //移动的速度决定了睡眠时间 从而反应了生物单步决策需要的时间
             try {
                 Thread.sleep(speed);
-            }catch (InterruptedException e) {
-                System.err.println("interrupt");    //从此跳出while循环
-                //抛出InterruptedException后中断标志被清除，标准做法是再次调用interrupt恢复中断
-                Thread.currentThread().interrupt();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -189,7 +183,31 @@ public class Creature extends Being implements Runnable{
 //                    Main.fightPlace.addCommand(command);
 //                    System.out.println(Main.fightPlace.commands.size());
 //                }
-                this.move(d.getX(),d.getY(),Main.fightPlace.getBoard(),Main.textArea,true);
+                DirectionVector v=null;
+                //只有人类可以召唤
+                if(this instanceof Human){
+                    if(Main.random.nextDouble()<=0.5){
+                        Human t=(Human)this;
+                        if(t.callMonster(Main.fightPlace.getBoard(),Main.textArea,true))
+                            continue;
+                    }
+//                    synchronized (Main.fightPlace.getBoard()){
+//                        if(Main.fightPlace.getBoard().canPutCreature(x,y+1)==true && Main.random.nextDouble()<=0.5){
+//                            //System.out.println("召唤一个"+x+","+(y+1));
+//                            PeaPod peaPod=new PeaPod(x,y+1, com.lgy.util.StyleImage.PEAPOD,50,true,0,"peapod",100,20);
+//                            Square temp=Main.fightPlace.getBoard().getSquare(x,y+1);
+//                            temp.setBeing(peaPod);
+//                            Main.fightPlace.getBoard().setSquare(temp);
+//                            System.out.println(Main.fightPlace.getBoard().canPutCreature(x,y+1));
+//                            Thread t=new Thread(peaPod);
+//                            t.start();
+//                            continue;
+//                        }
+//                    }
+                }
+
+
+                this.move((int)d.getX(),(int)d.getY(),Main.fightPlace.getBoard(),Main.textArea,true);
                 Main.fightPlace.paint();
             }
         }

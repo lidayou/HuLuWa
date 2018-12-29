@@ -109,6 +109,25 @@ public class Main extends Application {
                 if(e.getCode()==KeyCode.SPACE){  //按下空格键
                     //从READY状态进入DOINGRANDOM状态
                     if(fightPlace.getGameStatus()==READY){
+//                        //首先显示文件选择框
+//                        FileChooser fileChooser = new FileChooser();
+//                        fileChooser.getExtensionFilters().addAll(
+//                                new FileChooser.ExtensionFilter("Binary", "*.dat")
+//                        );
+//                        fileChooser.setTitle("保存战斗记录");
+//                        File file = fileChooser.showSaveDialog(stage);
+//                        if (file != null) {
+//                            fightPlace.setIsSavePlay(true);
+//                            fightPlace.setPlayBackFile(file);
+//                        }
+//                        else{
+//                            fightPlace.setIsSavePlay(false);
+//                            fightPlace.setPlayBackFile(null);
+//                        }
+                        fightPlace.setGameStatus(DOINGRANDOM);
+                        fightPlace.allMoveUp();
+                    }
+                    else if(fightPlace.getGameStatus()==GAMEOVER){
                         //首先显示文件选择框
                         FileChooser fileChooser = new FileChooser();
                         fileChooser.getExtensionFilters().addAll(
@@ -119,13 +138,12 @@ public class Main extends Application {
                         if (file != null) {
                             fightPlace.setIsSavePlay(true);
                             fightPlace.setPlayBackFile(file);
+                            fightPlace.saveFile(file);
                         }
                         else{
                             fightPlace.setIsSavePlay(false);
                             fightPlace.setPlayBackFile(null);
                         }
-                        fightPlace.setGameStatus(DOINGRANDOM);
-                        fightPlace.allMoveUp();
                     }
                 }
                 else if(e.getCode()==KeyCode.R){  //复位 从GameOver状态变为READY状态

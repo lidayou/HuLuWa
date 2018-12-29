@@ -55,8 +55,8 @@ public class BadManAdminister {
      * @return: boolean
      */
     public boolean isAllDie(){
-        if(snakeEssence.isAlive()==false)
-            return true;
+//        if(snakeEssence.isAlive()==false)
+//            return true;
 
         for(LittleMonster monster:monsters){
             if(monster.isAlive())

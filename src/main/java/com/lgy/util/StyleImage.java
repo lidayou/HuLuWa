@@ -15,5 +15,6 @@ public enum StyleImage implements java.io.Serializable{
     LITTLEMONSTER,
     SNAKE,
     SCORP,
-    BULLET
+    BULLET,
+    PEAPOD
 }

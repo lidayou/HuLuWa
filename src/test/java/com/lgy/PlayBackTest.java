@@ -33,7 +33,7 @@ public class PlayBackTest {
         FormationAdminister formationAdminister=new FormationAdminister();
         ArrayList<Command> commands=new ArrayList<>();
         ArrayList<Integer> index=new ArrayList<>();
-        File file=new File("/data_6.dat");
+        File file=new File(System.getProperty("user.dir")+"/src/main/resources/data_6.dat");    //使用相对路径
         PlayBacker.readCommands(commands,index, file);
         int index1=index.get(0);
         int index2=index.get(1);

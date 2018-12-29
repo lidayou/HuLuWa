@@ -20,7 +20,7 @@ public class ThreadAdminister {
             t.start();
     }
     /**
-     * @Description: 主动去中断线程 主要供游戏结束使用
+     * @Description: 主动去中断线程 主要供游戏结束使用 后期不再使用 因为在run()函数中使用了isOver函数进行控制线程
      * @Param: []
      * @return: void
      */

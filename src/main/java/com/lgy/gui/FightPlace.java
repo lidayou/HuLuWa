@@ -31,18 +31,15 @@ public class FightPlace  extends Canvas {
     private boolean isSavePlay=false; //是否保存记录以备回放
     private File playbackFile=null;        //记录要保存记录的文件
 
-    private static final int BaseX=210; //记录背景图片中棋盘的初始位置
-    private static final int BaseY=64;
-    private static final int BlockXSize=68;//记录棋盘每一个方格大致的范围
-    private static final int BlockYSize=85;
+    public static final int BaseX=210; //记录背景图片中棋盘的初始位置
+    public static final int BaseY=64;
+    public static final int BlockXSize=68;//记录棋盘每一个方格大致的范围
+    public static final int BlockYSize=85;
 
     private static final int row=5;         //行列数
     private static final int column=9;
 
     private GraphicsContext g =getGraphicsContext2D();
-
-
-
 
     //加载相应的图片信息
     private static Image imageBackground=new Image("/background.jpg",1000,600,true,false);
@@ -62,6 +59,7 @@ public class FightPlace  extends Canvas {
     private static Image imageGameOver=new Image("/gameover2.png",400,400,true,true);
     private static Image imageFire=new Image("/fennu.png",30,30,true,true);
     private static Image imageBullet=new Image("/fire1.png",30,30,true,true);
+    private static Image imagePeaPod=new Image("/peapod.png",83,83,true,true);
 
     //注:board中的数组表示坐标系与画图中的坐标系是相反的
     private Board board=new Board(row,column);
@@ -72,13 +70,18 @@ public class FightPlace  extends Canvas {
     private CommandsAdminister commandsAdminister=new CommandsAdminister();
     private FormationAdminister formationAdminister=new FormationAdminister();
 
+    private BulletAdminister bulletAdminister=new BulletAdminister();
+    private Thread threadBullet=new Thread(bulletAdminister);
+
 
     public CommandsAdminister getCommandsAdminister(){return commandsAdminister;}
     public FormationAdminister getFormationAdminister(){return formationAdminister;}
+    public BulletAdminister getBulletAdminister(){return bulletAdminister;}
 
     public void setIsSavePlay(boolean s){
         isSavePlay=s;
     }
+    public boolean isSavePlay(){return isSavePlay;}
     public void setPlayBackFile(File f){
         playbackFile=f;
     }
@@ -86,6 +89,9 @@ public class FightPlace  extends Canvas {
     public FightPlace(double width, double height){
         super(width,height);
         getReady();
+//        bulletAdminister.addBullet(new Bullet(0,0, StyleImage.BULLET,"1",new DirectionVector(1,1),211,65));
+//        Thread t=new Thread(bulletAdminister);
+//        t.start();
         paint();
     }
 
@@ -95,6 +101,7 @@ public class FightPlace  extends Canvas {
         goodManAdminister.initial();
         badManAdminister.initial();
         threadAdminister.clearAll();
+        bulletAdminister.clear();
 
         int index1=formationAdminister.getBadZhenXingIndex();
         int index2=formationAdminister.getGoodZhenXingIndex();
@@ -130,6 +137,8 @@ public class FightPlace  extends Canvas {
     public void allMoveUp(){
         startTime=System.currentTimeMillis();
         threadAdminister.startAll();
+        threadBullet=new Thread(bulletAdminister);
+        threadBullet.start();
     }
     
     /**
@@ -155,6 +164,12 @@ public class FightPlace  extends Canvas {
     private void mypaint(){
         g.clearRect(0,0,getWidth(),getHeight());
         g.drawImage(imageBackground,0,0);
+        synchronized (bulletAdminister.getBullets()){
+            for(int i=0;i<bulletAdminister.getBullets().size();i++){
+                Bullet b=bulletAdminister.getBullets().get(i);
+                g.drawImage(imageBullet, b.getD_x(), b.getD_y());
+            }
+        }
         for(int i=0;i<row;i++){
             for(int j=0;j<column;j++){
                 Being temp=board.getSquare(i,j).getBeing();
@@ -172,7 +187,7 @@ public class FightPlace  extends Canvas {
                         case LITTLEMONSTER:var=imageMonster;break;
                         case SCORP:var=imageScorp;break;
                         case SNAKE:var=imageSnake;break;
-
+                        case PEAPOD:var=imagePeaPod;break;
                         default:assert(1==0);break;
                     }
 
@@ -221,14 +236,16 @@ public class FightPlace  extends Canvas {
             synchronized (StausType) {  //增加同步控制
                 if (StausType == DOINGRANDOM) {
                     StausType = GAMEOVER;   //调整次序
-                    gameSuspend(); //刻意中断线程
-                    //在去中断各个生物线程时 他们可能还在往commands里写东西 故我们需要等一会 让可能正在写的写完
-                    try {           //等待中断
-                        Thread.sleep(200);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    saveFile(playbackFile);
+                    //gameSuspend(); //不再刻意中断线程 通过每个线程自身进行判定
+                    //这里仍然等一会 让可能存在往commands里写东西的做完
+
+                    //这里进行调整
+//                    try {           //等待中断
+//                        Thread.sleep(300);
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+//                    }
+//                    saveFile(playbackFile);
                     try {
                         Thread.sleep(100);
                     } catch (Exception e) {
@@ -274,6 +291,7 @@ public class FightPlace  extends Canvas {
     }
     public void gameSuspend(){  //游戏停止 刻意去中断所有线程
         threadAdminister.interruptAll();
+        //threadBullet.interrupt();
     }
     
     /**
@@ -287,7 +305,6 @@ public class FightPlace  extends Canvas {
             ArrayList<Integer> index=new ArrayList<>();
             index.add(formationAdminister.getGoodZhenXingIndex());
             index.add(formationAdminister.getBadZhenXingIndex());
-            //PlayBacker.writeCommands(commands,index,file);
             PlayBacker.writeCommands(commandsAdminister.getCommands(),index,file);
         }
         isSavePlay=false;
@@ -320,8 +337,9 @@ public class FightPlace  extends Canvas {
         formationAdminister.setGoodZhenXingIndex(index.get(0));
         formationAdminister.setBadZhenXingIndex(index.get(1));
         getReady();
+        threadBullet=new Thread(bulletAdminister);
+        threadBullet.start();
         commandsAdminister.setCommands(commandsTemp);
-        //commands=commandsTemp;
         System.err.println("playback commands size:"+commandsTemp.size());
         PlayBacker p=new PlayBacker(commandsAdminister.getCommands(),board);
         Thread t=new Thread(p);

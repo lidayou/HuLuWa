@@ -1,4 +1,4 @@
-# Java 大作业说明
+# Java 大作业说明(Version 1.1)[增加远程攻击]
 
 ## 开发环境
 
@@ -10,26 +10,33 @@
 * `mvn clean test package`在target目录下得到jar包 可直接执行。
 * 在初始状态下可以在菜单栏中为葫芦娃和妖怪选择阵型。提供8种阵型选择。
 * 左侧为战斗场景，右侧文字框展现结果(包括角色移动和攻击)同时给出操作提示。
-* 按空格键后，会弹出文件选择框以选择文件作为回放记录存储处。如果没有选择，则记录不会被保存下来。后续，双方会自动战斗(走动随机)。当爷爷或是蛇精被干掉，则游戏结束(擒贼先擒王)，弹出GameOver。整个战斗过程中，随着血量的减少，自身透明度会发生改变(为了不让死亡变得非常突兀)。当血量减少至一半时，会自动带上愤怒标签。当角色死亡后，会变成一块墓碑或十字架(同样可以被攻击，攻击两次后，死亡印记消失，这个角色就永远离开了)。整个游戏采用的策略比较单一，角色先判断能否对周围九宫格内进行攻击(包括死亡角色的墓碑)，若不能，则随机生成 一个方向向量(上下左右)进行行走(行走可能失败)。
+* 按空格键后，开始随机进行战斗(走动随机)。爷爷有一定概率召唤出豌豆荚，豌豆荚有一定概率发射火球。同时，除了豌豆荚没有近距离格斗外，其他角色都可以在九宫格范围内对敌方展开攻击。如果我方阵营的爷爷被干掉，则弹出GameOver，若敌方阵营全员被干掉，则也弹出GameOver，游戏结束。整个战斗过程中，随着血量的减少，自身透明度会发生改变(为了不让死亡变得非常突兀)。当血量减少至一半时，会自动带上愤怒标签。当角色死亡后，会变成一块墓碑或十字架(同样可以被攻击，攻击两次后，死亡印记消失，这个角色就永远离开了，同时注意远距离火球攻击伤害不到墓碑或是十字架)。整个游戏采用的策略比较单一，角色先判断能否对周围九宫格内进行攻击(包括死亡角色的墓碑)，若不能，则随机生成 一个方向向量(上下左右)进行行走(行走可能失败)。在游戏结束后，再按空格键，可以弹出一个文件选择框，将数据保存至文件中，便于后续复盘使用。
 * 通过按R键进行复位。
-* 按L键同样弹出选择框，选择记录文件，随后自动开始回放。一份个人觉得比较精彩的记录放于Goodplayback目录下的data_8.dat中。
+* 按L键同样弹出选择框，选择记录文件，随后自动开始回放。一份个人觉得比较精彩的记录放于Goodplayback目录下的data_3.dat和data_4.dat中。
+
+## 增添游戏内容
+
+* 给爷爷增加召唤豌豆荚功能(召唤成功概率为0.5)。
+* 豌豆荚不可移动，但可以发射子弹(水平)(依照一定概率进行发射)。
+* 由于爷爷阵营瞬间变强了，故只有敌方阵营全部被消灭后，游戏才结束，当然爷爷死了，也结束了。
 
 ## 效果展示图
 
-![GIF](https://github.com/lidayou/HuLuWa/blob/master/pic/GIF.gif)
+![GIF](C:\Users\13745\Desktop\GIF.gif)
 
 
 ## 包结构
 
 由于设计的类比较多，按照包管理机制对类文件进行管理。主要包括如下内容.
 
-* `administer`包用于对阵营、线程、记录、阵型初始化进行管理工作;
+* `administer`包用于对阵营、线程、记录、阵型初始化、子弹进行管理工作;
 
   * `BadManAdminister`用于对小怪、蛇精、蝎子精进行管理。主要对他们进行初始化以及判断他们的生死情况。
   * `GoodManAdminster`与之类似，管理爷爷和7个葫芦娃。
   * `ThreadAdminister`用于管理线程。
   * `CommandsAdminister`用于对记录进行管理。
   * `FormationAdminister`用于对不同阵型的初始化数据进行管理。
+  * `BulletAdminister`用于保存战场子弹，同时它实现Runnable接口，每一次该任务被调用执行，就会对当前保管的子弹信息进行调整。
 
 * `annotation`包用于管理自定义的注解类;
 
@@ -37,7 +44,7 @@
 
 * `being`包下包括所有的存在类型;
 
-  ![1](https://github.com/lidayou/HuLuWa/blob/master/pic/1.JPG)
+  ![1](C:\Users\13745\Desktop\大作业\HuLuWa3\pic\1.JPG)
 
   * Being作为该包中的总基类。实现Cloneable、Serializeable接口(用于支持保存文件进行回放)。其主要包括坐标信息以及图片信息。
 
@@ -54,10 +61,12 @@
   | int id           | 标号                             |
 
   * 同时包括两个基本函数`move(),attack()`来支持生物之间的交互。其余的子类中除了HuLuWa还包括额外属性rank之外，都没有增添额外的属性以及方法。虽然显得有些冗余，但这样的多级层次化结构在使用RTTI时还	是提供了很大的遍历。同时也为后期拓展提供了可能。
+  * Bullet记录子弹信息，其中内部存储位置信息(像素点位置而不是在Board中的位置)，同时还有一个方向向量，用于每次移动时使用。
+  * 后期在GoodCreature下增添PeaPod类，爷爷可以召唤出豌豆荚类。该类重写run方法，每次以一定概率生成初始子弹信息，然后把子弹信息放入BulletAdminister保管的数组中。
 
 * `formation`包管理有关阵型的类;
 
-![2](https://github.com/lidayou/HuLuWa/blob/master/pic/2.JPG)
+![2](C:\Users\13745\Desktop\project_pic\2.JPG)
 
   Formation类为抽象类，不能显示实例化。其8个子类具体实现了某种阵型。同时FormationFactory类中使用工厂方法，生产出特定的阵型向外提供。外界只与该包中的工厂方法进行交互。
 
@@ -73,11 +82,11 @@
 
   * Command表示存进文件的一个记录。其包括两个属性Creature和Behave。Creature表示行为的主体。Behave表示行为本身。
 
-  * Behave表示一个行为。作为基类，下有战斗行为和移动行为(AttackBehave和MoveBehave)。
+  * Behave表示一个行为。作为基类，下有战斗行为和移动行为(AttackBehave和MoveBehave)。还有后期增添的CallBehave(爷爷的召唤行为)以及BulletFireBehave(豌豆荚生成子弹的行为)。
 
   * PlayBacker主要是进行文件存取。包括`writeCommands()`和`readCommands()`方法。
 
-    ![3](https://github.com/lidayou/HuLuWa/blob/master/pic/3.JPG)
+    ![3](C:\Users\13745\Desktop\大作业\HuLuWa3\pic\3.JPG)
 
 * `sample`包中包含程序入口`Main`;
 
@@ -94,7 +103,7 @@
 
   * GameStatus作为一个枚举类表示游戏当前的状态。有四种状态，READY、DOINGRANDOM、DOINGPLAYBACK、GAMEOVER。状态转移图如下所示。
 
-    ![4](https://github.com/lidayou/HuLuWa/blob/master/pic/4.JPG)
+    ![4](C:\Users\13745\Desktop\project_pic\4.JPG)
 
   * StyleImage用于给Being贴一层皮。我的想法是不需要每一个being实例化后都直接拥有一个image，如此实现StyleImage到image的映射。这样多个being可以通过StyleImage共享一个image。
 
@@ -237,6 +246,10 @@
 * 单元测试
 
   主要书写了四个测试类。FormationTest用于检测初始化敌我阵型是否会碰撞。CreatureMoveTest用于检测生物在四周都是生物的情况下是否会移动，侵占他人的区域。CreatureAttackTest用于检测生物的攻击逻辑。PlayBackTest则读取resources资源下的一个简单回放文件。对序列进行检查。一边仿真一边检查，监测点包括当前次序下生物是否存在，以及攻击行为发生的合法性等。该检测时间要一分钟左右。
+
+* 远距离攻击的添加
+
+  豌豆荚在run方法中每隔一段时间生成一个Bullet对象，然后使用同步机制，将其放入BulletAdminister中的数组中进行保管。而BulletAdminister也实现run方法，每次轮到它的任务执行时，就对当前其保管的所有子弹进行移动。
 
 ## 再谈设计
 

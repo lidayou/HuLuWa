@@ -2,6 +2,8 @@ package com.lgy.playback;
 
 import com.lgy.annotation.ClassAnnotation;
 import com.lgy.being.Creature;
+import com.lgy.being.Human;
+import com.lgy.being.PeaPod;
 import com.lgy.sample.Main;
 import com.lgy.space.Board;
 
@@ -27,7 +29,6 @@ public class PlayBacker implements Runnable{
         long placeBackStartTime=System.currentTimeMillis();
         long placeBackCurTime=0;
         Main.textArea.appendText("开始回放啦\n");
-        //System.out.println(commands.size());
         while (cur<commands.size() && !Thread.interrupted()) {
             //System.out.println(cur);
             //挨个处理指令
@@ -37,7 +38,13 @@ public class PlayBacker implements Runnable{
             if (command.getBehave().getSleepTime() <= (placeBackCurTime - placeBackStartTime)) {
                 //指令执行
                 Creature temp = Main.fightPlace.getBoard().findCreature(command.getCreature());
-                if (temp != null) {
+                if(command.getBehave() instanceof BulletFireBehave){
+                    BulletFireBehave fireBehave=(BulletFireBehave)command.getBehave();
+                    Main.fightPlace.getBulletAdminister().addBullet(fireBehave.getBullet());
+                    System.out.println("add bullet");
+                    cur++;
+                }
+                else if (temp != null) {
                     if (command.getBehave() instanceof MoveBehave) {
                         MoveBehave moveBehave = (MoveBehave) command.getBehave();
                         temp.move(moveBehave.getDx(), moveBehave.getDy(),board,Main.textArea,false);
@@ -49,9 +56,19 @@ public class PlayBacker implements Runnable{
                         } else {
                             System.err.println("attackbehave error");
                         }
+                    }else if(command.getBehave() instanceof CallBahave){
+                        CallBahave callBehave = (CallBahave) command.getBehave();
+                        Creature peapot=callBehave.getCreature();
+                        if(peapot instanceof PeaPod && temp instanceof Human){
+                            ((Human) temp).callMonster(board,Main.textArea,false);
+                        }
+                        else{
+                            System.err.println("callbehave error");
+                        }
                     }
                     cur++;
-                } else {
+                }
+                else{
                     System.out.println(command.getCreature().getName());
                     System.out.println(cur);
                     if(command.getBehave() instanceof AttackBehave)

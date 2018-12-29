@@ -1,6 +1,7 @@
 package com.lgy.playback;
 
 import com.lgy.annotation.ClassAnnotation;
+import com.lgy.being.Being;
 import com.lgy.being.Creature;
 
 @ClassAnnotation(descrip = "描述存档的每一条记录。记录包括一个主体，和具体的行为")

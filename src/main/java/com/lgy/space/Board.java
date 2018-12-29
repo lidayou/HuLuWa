@@ -2,16 +2,16 @@ package com.lgy.space;
 
 import com.lgy.annotation.ClassAnnotation;
 import com.lgy.being.BadCreature;
+import com.lgy.being.Being;
 import com.lgy.being.Creature;
 import com.lgy.being.GoodCreature;
+import com.lgy.sample.Main;
 import com.lgy.util.DirectionVector;
-import com.lgy.util.SquareType;
 
 import java.util.ArrayList;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static com.lgy.util.SquareType.NOTHING;
 
 @ClassAnnotation(descrip = "描述二维的战斗数组信息")
 public class Board{
@@ -193,6 +193,14 @@ public class Board{
             }
         }
         return null;
+    }
+
+    public Being getBeing(double d_x, double d_y){
+        int tx=((int)d_y- Main.fightPlace.BaseY)/Main.fightPlace.BlockYSize;
+        int ty=((int)d_x- Main.fightPlace.BaseX)/Main.fightPlace.BlockXSize;
+        if(tx<0||tx>=row||ty<0||ty>=column)
+            return null;
+        return board[tx][ty].getBeing();
     }
 }
 
