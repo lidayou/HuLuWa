@@ -22,7 +22,7 @@
 
 ## 效果展示图
 
-![GIF](C:\Users\13745\Desktop\GIF.gif)
+![GIF](/pic/GIF.gif)
 
 
 ## 包结构
@@ -44,7 +44,7 @@
 
 * `being`包下包括所有的存在类型;
 
-  ![1](C:\Users\13745\Desktop\大作业\HuLuWa3\pic\1.JPG)
+  ![1](/pic/1.JPG)
 
   * Being作为该包中的总基类。实现Cloneable、Serializeable接口(用于支持保存文件进行回放)。其主要包括坐标信息以及图片信息。
 
@@ -66,7 +66,7 @@
 
 * `formation`包管理有关阵型的类;
 
-![2](C:\Users\13745\Desktop\project_pic\2.JPG)
+![2](/pic/2.JPG)
 
   Formation类为抽象类，不能显示实例化。其8个子类具体实现了某种阵型。同时FormationFactory类中使用工厂方法，生产出特定的阵型向外提供。外界只与该包中的工厂方法进行交互。
 
@@ -86,7 +86,7 @@
 
   * PlayBacker主要是进行文件存取。包括`writeCommands()`和`readCommands()`方法。
 
-    ![3](C:\Users\13745\Desktop\大作业\HuLuWa3\pic\3.JPG)
+    ![3](/pic/3.JPG)
 
 * `sample`包中包含程序入口`Main`;
 
@@ -103,7 +103,7 @@
 
   * GameStatus作为一个枚举类表示游戏当前的状态。有四种状态，READY、DOINGRANDOM、DOINGPLAYBACK、GAMEOVER。状态转移图如下所示。
 
-    ![4](C:\Users\13745\Desktop\project_pic\4.JPG)
+    ![4](/pic/4.JPG)
 
   * StyleImage用于给Being贴一层皮。我的想法是不需要每一个being实例化后都直接拥有一个image，如此实现StyleImage到image的映射。这样多个being可以通过StyleImage共享一个image。
 
